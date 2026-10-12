@@ -29,6 +29,11 @@ app.get('/health', (req: Request, res: Response) => {
   });
 });
 
+// OpenAPI Spec endpoint
+app.get('/api/docs', (req: Request, res: Response) => {
+  res.sendFile(path.join(__dirname, '../docs/openapi.yaml'));
+});
+
 // Boardroom API routes
 app.use('/api/board', boardRouter);
 

@@ -1,0 +1,111 @@
+openapi: 3.0.3
+info:
+  title: ContraBoard (Devil's Advocate Boardroom) API
+  version: 1.0.0
+  description: Adversarial AI boardroom service stress-testing pitches, architectures, and financial assumptions in real time.
+servers:
+  - url: http://localhost:3000
+    description: Local Development & Staging Server
+paths:
+  /health:
+    get:
+      summary: Health check endpoint
+      responses:
+        '200':
+          description: Service health status
+  /api/board/personas:
+    get:
+      summary: Retrieve all available cynical boardroom personas
+      responses:
+        '200':
+          description: List of personas with background, quotes, and initial skepticism
+  /api/board/session:
+    post:
+      summary: Initialize a new boardroom stress-testing session
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - proposalTitle
+                - proposalContent
+              properties:
+                proposalTitle:
+                  type: string
+                  example: Distributed In-Memory Settlement Pipeline
+                proposalContent:
+                  type: string
+                  example: High-frequency ledger using optimistic locking with sub-10ms cross-region replicas.
+                selectedPersonas:
+                  type: array
+                  items:
+                    type: string
+                  example: ["victor_vance", "elena_rostova", "marcus_chen", "sasha_morales"]
+      responses:
+        '201':
+          description: Session created with initial skepticism score of 75
+  /api/board/session/{sessionId}:
+    get:
+      summary: Retrieve boardroom session status, tension level, and transcripts
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Session state and full transcript
+  /api/board/session/{sessionId}/stream:
+    get:
+      summary: Server-Sent Events (SSE) real-time multi-turn debate stream
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: SSE event stream emitting persona_started, persona_token, persona_finished, and tension_update
+  /api/board/session/{sessionId}/defend:
+    post:
+      summary: Submit evidence-backed defense against persona critique
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - userArgument
+              properties:
+                userArgument:
+                  type: string
+                  example: We enforce circuit breakers with p99 latency bounded under 8ms and 78% gross margin.
+                targetPersonaId:
+                  type: string
+                  example: victor_vance
+      responses:
+        '200':
+          description: Defense evaluation with skepticism delta and adversarial rebuttal
+  /api/board/session/{sessionId}/pre-mortem:
+    post:
+      summary: Synthesize entire boardroom hearing into structured Pre-Mortem Report
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Pre-Mortem Report containing survival score, fatal flaws, risk matrix, and pivots

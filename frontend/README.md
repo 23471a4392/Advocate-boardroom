@@ -17,3 +17,4 @@
 <!-- Step 31: feat/31-mock-defense-evaluation -->
 <!-- Step 32: feat/32-mock-skepticism-delta-calculator -->
 <!-- Step 33: feat/33-mock-pre-mortem-synthesis -->
+<!-- Step 36: feat/36-navbar-sound-controls -->

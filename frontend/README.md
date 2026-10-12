@@ -19,3 +19,4 @@
 <!-- Step 33: feat/33-mock-pre-mortem-synthesis -->
 <!-- Step 36: feat/36-navbar-sound-controls -->
 <!-- Step 38: feat/38-tension-meter-gradient -->
+<!-- Step 40: feat/40-persona-card-visualizer -->

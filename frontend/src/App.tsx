@@ -6,12 +6,20 @@ import { HearingFeed } from './components/HearingFeed';
 import { HotSeatConsole } from './components/HotSeatConsole';
 import { ProposalDrawer } from './components/ProposalDrawer';
 import { PreMortemModal } from './components/PreMortemModal';
+import { LandingPage } from './components/LandingPage';
+import { SignInModal } from './components/SignInModal';
+import { IdeaQrModal } from './components/IdeaQrModal';
 import { INITIAL_PERSONAS, PRESET_PROPOSALS } from './data/defaultData';
-import type { HearingMessage, Persona, PersonaId, PreMortemReport, Proposal, SessionStatus } from './types';
+import type { HearingMessage, Persona, PersonaId, PreMortemReport, Proposal, SessionStatus, User } from './types';
 import { boardApi } from './services/api';
 import { soundEngine } from './utils/audio';
 
 export function App() {
+  const [currentPage, setCurrentPage] = useState<'landing' | 'boardroom'>('landing');
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [isSignInOpen, setIsSignInOpen] = useState<boolean>(false);
+  const [isQrModalOpen, setIsQrModalOpen] = useState<boolean>(false);
+
   const [proposal, setProposal] = useState<Proposal>(PRESET_PROPOSALS[0]);
   const [personas, setPersonas] = useState<Persona[]>(INITIAL_PERSONAS);
   const [messages, setMessages] = useState<HearingMessage[]>([]);
@@ -57,7 +65,7 @@ export function App() {
       setMessages(prev => [...prev, msg]);
 
       // Small delay between speakers
-      await new Promise(r => setTimeout(r, 900));
+      await new Promise(r => setTimeout(r, 850));
     }
 
     setActiveSpeakerId(null);
@@ -69,10 +77,33 @@ export function App() {
     setPreMortemReport(report);
   }, []);
 
-  // Initial load
+  // When switching directly to boardroom, ensure session is running
   useEffect(() => {
+    if (currentPage === 'boardroom' && messages.length === 0 && !isLoading) {
+      startHearingSession(proposal);
+    }
+  }, [currentPage, messages.length, isLoading, proposal, startHearingSession]);
+
+  // Handle user authentication
+  const handleSignInSuccess = (user: User) => {
+    setCurrentUser(user);
+    setIsSignInOpen(false);
+    setCurrentPage('boardroom');
+    soundEngine.playGavel();
     startHearingSession(proposal);
-  }, [proposal, startHearingSession]);
+  };
+
+  const handleSignOut = () => {
+    setCurrentUser(null);
+    setCurrentPage('landing');
+  };
+
+  // Handle proposal selection (from QR scan or drawer)
+  const handleSelectProposal = (newProposal: Proposal) => {
+    setProposal(newProposal);
+    setCurrentPage('boardroom');
+    startHearingSession(newProposal);
+  };
 
   // Advance to Round 2 (Crossfire between personas)
   const handleTriggerRound2 = async () => {
@@ -109,8 +140,8 @@ export function App() {
     const userMsg: HearingMessage = {
       id: `usr-${Date.now()}`,
       speakerId: 'user',
-      speakerName: 'You (The Hot Seat)',
-      speakerRole: 'Proposal Author',
+      speakerName: currentUser ? currentUser.name : 'You (The Hot Seat)',
+      speakerRole: currentUser ? currentUser.role : 'Proposal Author',
       content: defenseText,
       targetId: targetId,
       round: round,
@@ -140,100 +171,130 @@ export function App() {
 
   return (
     <div className="min-h-screen bg-[#090a0f] text-slate-100 flex flex-col antialiased">
-      {/* Top Navbar */}
-      <Navbar
-        proposal={proposal}
-        sessionStatus={sessionStatus}
-        onOpenProposalModal={() => setIsProposalDrawerOpen(true)}
-        onOpenPreMortem={() => setIsPreMortemOpen(true)}
-        onResetSession={() => startHearingSession(proposal)}
-        hasReport={!!preMortemReport}
+      {currentPage === 'landing' ? (
+        /* High-Impact Website Landing Page */
+        <LandingPage
+          onOpenSignIn={() => setIsSignInOpen(true)}
+          onOpenQrUpload={() => setIsQrModalOpen(true)}
+          onEnterAsGuest={() => {
+            setCurrentPage('boardroom');
+            startHearingSession(proposal);
+          }}
+        />
+      ) : (
+        /* Boardroom War Room View */
+        <div className="min-h-screen flex flex-col">
+          {/* Top Navbar */}
+          <Navbar
+            proposal={proposal}
+            sessionStatus={sessionStatus}
+            currentUser={currentUser}
+            onOpenProposalModal={() => setIsProposalDrawerOpen(true)}
+            onOpenPreMortem={() => setIsPreMortemOpen(true)}
+            onResetSession={() => startHearingSession(proposal)}
+            onOpenQrUpload={() => setIsQrModalOpen(true)}
+            onGoToLanding={() => setCurrentPage('landing')}
+            onSignOut={handleSignOut}
+            hasReport={!!preMortemReport}
+          />
+
+          {/* Main War Room Body */}
+          <main className="flex-1 max-w-7xl w-full mx-auto p-3 sm:p-6 lg:p-8 space-y-4 sm:space-y-6">
+            {/* Tension Meter Banner */}
+            <TensionMeter
+              tension={roomTension}
+              round={round}
+              sessionStatus={sessionStatus}
+            />
+
+            {/* Boardroom Seating Layout (Visual Centerpiece) */}
+            <BoardroomTable
+              personas={personas}
+              activeSpeakerId={activeSpeakerId}
+              selectedTargetId={selectedTargetId}
+              onSelectTarget={(id) => setSelectedTargetId(prev => (prev === id ? null : id))}
+              proposalTitle={proposal.title}
+            />
+
+            {/* Lower War Room: Live Feed & Hot Seat Defense */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
+              {/* Live Hearing Transcript (7 cols on desktop) */}
+              <div className="lg:col-span-7">
+                <HearingFeed
+                  messages={messages}
+                  isLoading={isLoading}
+                  onNextRound={handleTriggerRound2}
+                  canAdvanceRound={round === 1 && !isLoading}
+                  round={round}
+                />
+              </div>
+
+              {/* Interactive Defense Dock & Summary (5 cols on desktop) */}
+              <div className="lg:col-span-5 space-y-4">
+                <HotSeatConsole
+                  personas={personas}
+                  selectedTargetId={selectedTargetId}
+                  onSelectTarget={setSelectedTargetId}
+                  onSubmitDefense={handleSubmitDefense}
+                  isSubmitting={isLoading}
+                />
+
+                {/* Quick Proposal Intel Card */}
+                <div className="bg-[#0f121d] border border-slate-800 rounded-xl p-4 shadow-lg text-xs space-y-2.5">
+                  <div className="flex items-center justify-between pb-2 border-b border-slate-800">
+                    <span className="font-semibold text-slate-300 uppercase tracking-wider text-[11px]">
+                      Proposal Assumptions Under Fire
+                    </span>
+                    <span className="text-[10px] text-rose-400 font-mono">
+                      {proposal.keyAssumptions.length} Hypotheses
+                    </span>
+                  </div>
+                  <ul className="space-y-1.5 text-slate-400">
+                    {proposal.keyAssumptions.map((hyp, idx) => (
+                      <li key={idx} className="flex items-start gap-1.5 leading-relaxed">
+                        <span className="text-rose-500 font-bold">•</span>
+                        <span>{hyp}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  {proposal.budgetOrRunway && (
+                    <div className="pt-2 border-t border-slate-800 flex items-center justify-between text-[11px] text-slate-400">
+                      <span>Declared Runway / Budget:</span>
+                      <span className="font-mono text-slate-200 font-semibold">{proposal.budgetOrRunway}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </main>
+
+          {/* Footer */}
+          <footer className="border-t border-slate-900 bg-[#07080c] py-4 text-center text-xs text-slate-600">
+            <p>ContraBoard &bull; Adversarial AI Decision Studio &bull; Full-Stack Live</p>
+          </footer>
+        </div>
+      )}
+
+      {/* Global Modals */}
+      <SignInModal
+        isOpen={isSignInOpen}
+        onClose={() => setIsSignInOpen(false)}
+        onSignIn={handleSignInSuccess}
+        onOpenQrUpload={() => setIsQrModalOpen(true)}
       />
 
-      {/* Main War Room Body */}
-      <main className="flex-1 max-w-7xl w-full mx-auto p-3 sm:p-6 lg:p-8 space-y-4 sm:space-y-6">
-        {/* Tension Meter Banner */}
-        <TensionMeter
-          tension={roomTension}
-          round={round}
-          sessionStatus={sessionStatus}
-        />
+      <IdeaQrModal
+        isOpen={isQrModalOpen}
+        onClose={() => setIsQrModalOpen(false)}
+        onSelectProposal={handleSelectProposal}
+        currentProposal={proposal}
+      />
 
-        {/* Boardroom Seating Layout (Visual Centerpiece) */}
-        <BoardroomTable
-          personas={personas}
-          activeSpeakerId={activeSpeakerId}
-          selectedTargetId={selectedTargetId}
-          onSelectTarget={(id) => setSelectedTargetId(prev => (prev === id ? null : id))}
-          proposalTitle={proposal.title}
-        />
-
-        {/* Lower War Room: Live Feed & Hot Seat Defense */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
-          {/* Live Hearing Transcript (7 cols on desktop) */}
-          <div className="lg:col-span-7">
-            <HearingFeed
-              messages={messages}
-              isLoading={isLoading}
-              onNextRound={handleTriggerRound2}
-              canAdvanceRound={round === 1 && !isLoading}
-              round={round}
-            />
-          </div>
-
-          {/* Interactive Defense Dock & Summary (5 cols on desktop) */}
-          <div className="lg:col-span-5 space-y-4">
-            <HotSeatConsole
-              personas={personas}
-              selectedTargetId={selectedTargetId}
-              onSelectTarget={setSelectedTargetId}
-              onSubmitDefense={handleSubmitDefense}
-              isSubmitting={isLoading}
-            />
-
-            {/* Quick Proposal Intel Card */}
-            <div className="bg-[#0f121d] border border-slate-800 rounded-xl p-4 shadow-lg text-xs space-y-2.5">
-              <div className="flex items-center justify-between pb-2 border-b border-slate-800">
-                <span className="font-semibold text-slate-300 uppercase tracking-wider text-[11px]">
-                  Proposal Assumptions Under Fire
-                </span>
-                <span className="text-[10px] text-rose-400 font-mono">
-                  {proposal.keyAssumptions.length} Hypotheses
-                </span>
-              </div>
-              <ul className="space-y-1.5 text-slate-400">
-                {proposal.keyAssumptions.map((hyp, idx) => (
-                  <li key={idx} className="flex items-start gap-1.5 leading-relaxed">
-                    <span className="text-rose-500 font-bold">•</span>
-                    <span>{hyp}</span>
-                  </li>
-                ))}
-              </ul>
-              {proposal.budgetOrRunway && (
-                <div className="pt-2 border-t border-slate-800 flex items-center justify-between text-[11px] text-slate-400">
-                  <span>Declared Runway / Budget:</span>
-                  <span className="font-mono text-slate-200 font-semibold">{proposal.budgetOrRunway}</span>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </main>
-
-      {/* Footer */}
-      <footer className="border-t border-slate-900 bg-[#07080c] py-4 text-center text-xs text-slate-600">
-        <p>ContraBoard &bull; Adversarial AI Decision Studio &bull; Ready for Backend Integration</p>
-      </footer>
-
-      {/* Modals & Drawers */}
       <ProposalDrawer
         isOpen={isProposalDrawerOpen}
         onClose={() => setIsProposalDrawerOpen(false)}
         currentProposal={proposal}
-        onSelectProposal={(newProposal) => {
-          setProposal(newProposal);
-          startHearingSession(newProposal);
-        }}
+        onSelectProposal={handleSelectProposal}
       />
 
       <PreMortemModal

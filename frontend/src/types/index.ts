@@ -83,3 +83,11 @@ export interface PreMortemReport {
 }
 
 export type SessionStatus = 'idle' | 'in_session' | 'defending' | 'adjourned';
+
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: 'Founder & CEO' | 'Lead Architect' | 'Venture Investor' | 'Chief Security Officer';
+  avatarInitials: string;
+}

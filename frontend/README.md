@@ -8,3 +8,4 @@
 <!-- Step 20: feat/20-preset-microservices-rfc -->
 <!-- Step 21: feat/21-preset-pricing-overhaul -->
 <!-- Step 22: feat/22-preset-ai-support-agents -->
+<!-- Step 23: feat/23-preset-open-core-devtool -->

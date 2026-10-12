@@ -21,3 +21,4 @@
 <!-- Step 38: feat/38-tension-meter-gradient -->
 <!-- Step 40: feat/40-persona-card-visualizer -->
 <!-- Step 41: feat/41-persona-speaking-indicators -->
+<!-- Step 42: feat/42-persona-interactive-targeting -->

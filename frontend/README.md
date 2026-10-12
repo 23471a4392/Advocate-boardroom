@@ -9,3 +9,4 @@
 <!-- Step 21: feat/21-preset-pricing-overhaul -->
 <!-- Step 22: feat/22-preset-ai-support-agents -->
 <!-- Step 23: feat/23-preset-open-core-devtool -->
+<!-- Step 25: feat/25-audio-gavel-strike -->

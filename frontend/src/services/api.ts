@@ -1,9 +1,9 @@
 import type { HearingMessage, Persona, PreMortemReport, Proposal } from '../types';
 import { MockBoardroomEngine } from './mockBoardroomEngine';
 
-// CONFIGURATION: Set to false when your teammate connects the Node.js / FastAPI backend!
-export const USE_MOCK_ENGINE = true;
-export const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+// CONFIGURATION: Set to false to use the live Node.js Express backend!
+export const USE_MOCK_ENGINE = false;
+export const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
 let activeEngine: MockBoardroomEngine | null = null;
 

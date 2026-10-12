@@ -98,7 +98,7 @@ export const ProposalDrawer: React.FC<ProposalDrawerProps> = ({
         <div className="p-4 sm:p-6 overflow-y-auto flex-1 space-y-4">
           {activeTab === 'presets' ? (
             <div className="space-y-3">
-              {PRESET_PROPOSALS.map((preset) => {
+              {PRESET_PROPOSALS.map((preset: Proposal) => {
                 const isSelected = preset.id === currentProposal.id;
                 return (
                   <div
@@ -167,7 +167,7 @@ export const ProposalDrawer: React.FC<ProposalDrawerProps> = ({
                 <textarea
                   rows={5}
                   value={customSummary}
-                  onChange={(e) => setCustomSummary(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setCustomSummary(e.target.value)}
                   placeholder="Describe what you are building, the architectural changes, and why you believe it will succeed..."
                   className="w-full bg-[#0d0f19] border border-slate-800 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:ring-1 focus:ring-rose-500 resize-none"
                   required

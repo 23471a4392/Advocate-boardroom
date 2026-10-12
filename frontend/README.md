@@ -14,3 +14,4 @@
 <!-- Step 27: feat/27-audio-tension-alert -->
 <!-- Step 29: feat/29-mock-round1-opening-salvos -->
 <!-- Step 30: feat/30-mock-round2-crossfire-spar -->
+<!-- Step 31: feat/31-mock-defense-evaluation -->

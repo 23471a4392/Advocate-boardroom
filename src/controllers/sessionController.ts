@@ -30,7 +30,31 @@ export class SessionController {
    */
   public static async createSession(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const validated = createSessionSchema.parse(req.body);
+      const bodyToParse = req.body.proposal
+        ? {
+            proposalTitle: req.body.proposal.title,
+            proposalContent:
+              req.body.proposal.summary ||
+              (req.body.proposal.keyAssumptions
+                ? req.body.proposal.keyAssumptions.join('. ')
+                : 'Enterprise Proposal Architecture'),
+            selectedPersonas: Array.isArray(req.body.personas)
+              ? req.body.personas.map((p: any) =>
+                  p.id === 'sre'
+                    ? 'victor_vance'
+                    : p.id === 'cfo'
+                    ? 'elena_rostova'
+                    : p.id === 'cso'
+                    ? 'marcus_chen'
+                    : p.id === 'ux'
+                    ? 'sasha_morales'
+                    : p.id
+                )
+              : undefined,
+          }
+        : req.body;
+
+      const validated = createSessionSchema.parse(bodyToParse);
       const sessionId = uuidv4();
       const now = new Date().toISOString();
 

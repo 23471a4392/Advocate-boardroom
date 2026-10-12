@@ -4,6 +4,7 @@ import path from 'path';
 import { env } from './config/env';
 import { rateLimiter } from './middleware/rateLimiter';
 import { errorHandler } from './middleware/errorHandler';
+import { boardRouter } from './routes/boardRoutes';
 
 const app: Application = express();
 
@@ -27,5 +28,11 @@ app.get('/health', (req: Request, res: Response) => {
     timestamp: new Date().toISOString(),
   });
 });
+
+// Boardroom API routes
+app.use('/api/board', boardRouter);
+
+// Global Error Handler
+app.use(errorHandler);
 
 export { app };

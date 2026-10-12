@@ -16,3 +16,4 @@
 <!-- Step 30: feat/30-mock-round2-crossfire-spar -->
 <!-- Step 31: feat/31-mock-defense-evaluation -->
 <!-- Step 32: feat/32-mock-skepticism-delta-calculator -->
+<!-- Step 33: feat/33-mock-pre-mortem-synthesis -->

@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  contraboard-backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: contraboard_backend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - NODE_ENV=production
+      - DB_PATH=/app/data/contraboard.sqlite
+      - CORS_ORIGIN=*
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    volumes:
+      - contraboard_data:/app/data
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+volumes:
+  contraboard_data:
+    driver: local

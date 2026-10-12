@@ -1,167 +1,19 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ContraBoard | Devil's Advocate Boardroom</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
-</head>
-<body>
-  <div class="app-container">
-    <!-- Executive Header -->
-    <header class="board-header">
-      <div class="header-branding">
-        <div class="seal-icon">⚖️</div>
-        <div>
-          <h1 class="brand-title">CONTRABOARD</h1>
-          <p class="brand-subtitle">Devil's Advocate Boardroom • Adversarial Pitch Stress-Tester</p>
-        </div>
-      </div>
-      <div class="header-metrics">
-        <div class="metric-chip">
-          <span class="metric-label">BOARDROOM TENSION</span>
-          <div class="tension-bar-wrapper">
-            <div id="tensionBar" class="tension-bar-fill" style="width: 65%;"></div>
-          </div>
-          <span id="tensionValue" class="metric-value">65%</span>
-        </div>
-        <div class="metric-chip status-chip">
-          <span class="status-indicator live"></span>
-          <span id="sessionStatusText">Awaiting Pitch</span>
-        </div>
-      </div>
-    </header>
-
-    <!-- Main Boardroom Grid -->
-    <main class="board-layout">
-      <!-- Left Column: Pitch & Personas -->
-      <section class="left-panel">
-        <!-- Proposal Submission Card -->
-        <div class="executive-card proposal-card">
-          <div class="card-header">
-            <h2>1. Proposal & Architecture Pitch</h2>
-            <span class="step-badge">Step 1</span>
-          </div>
-
-          <div class="template-selector">
-            <span class="selector-label">Load Enterprise Template:</span>
-            <div class="template-buttons">
-              <button type="button" class="btn-chip" onclick="loadTemplate('fintech')">⚡ FinTech Settlement</button>
-              <button type="button" class="btn-chip" onclick="loadTemplate('agent')">🤖 Autonomous AI Fleet</button>
-              <button type="button" class="btn-chip" onclick="loadTemplate('health')">🏥 Healthcare Data Mesh</button>
-            </div>
-          </div>
-
-          <form id="proposalForm" onsubmit="event.preventDefault(); conveneBoardroom();">
-            <div class="form-group">
-              <label for="proposalTitle">Initiative / Architecture Title</label>
-              <input type="text" id="proposalTitle" class="form-input" placeholder="e.g. Distributed In-Memory Settlement Pipeline" required>
-            </div>
-
-            <div class="form-group">
-              <label for="proposalContent">Pitch Brief & Operational Assumptions</label>
-              <textarea id="proposalContent" class="form-textarea" rows="4" placeholder="Detail your technical architecture, expected throughput, cost assumptions, and customer adoption strategy..." required></textarea>
-            </div>
-
-            <button type="submit" id="conveneBtn" class="btn-primary">
-              <span class="btn-icon">🏛️</span> Convene Devil's Advocate Board
-            </button>
-          </form>
-        </div>
-
-        <!-- Boardroom Members (The Cynics) -->
-        <div class="executive-card personas-card">
-          <div class="card-header">
-            <h2>2. The Adversarial Board Members</h2>
-            <span class="badge-subtle">4 Specialists</span>
-          </div>
-          <div id="personasList" class="persona-grid">
-            <!-- Dynamically injected via JS -->
-            <div class="loading-placeholder">Summoning Board Members...</div>
-          </div>
-        </div>
-      </section>
-
-      <!-- Right Column: Live War Room & Debate Stream -->
-      <section class="right-panel">
-        <!-- Live Debate Stream -->
-        <div class="executive-card stream-card">
-          <div class="card-header">
-            <div class="stream-title-group">
-              <h2>3. Live Boardroom Cross-Examination</h2>
-              <span id="roundIndicator" class="round-badge">Standby</span>
-            </div>
-            <div class="stream-controls">
-              <button type="button" id="startStreamBtn" class="btn-secondary" disabled onclick="startDebateStream()">
-                <span class="btn-icon">🔥</span> Launch Debate Stream
-              </button>
-            </div>
-          </div>
-
-          <!-- Transcript Feed -->
-          <div id="transcriptFeed" class="transcript-feed">
-            <div class="welcome-box">
-              <div class="welcome-icon">⚖️</div>
-              <h3>The Adversarial Board Awaits Your Proposal</h3>
-              <p>Convene the board to subject your technical and economic assumptions to unsparing SRE, Financial, Security, and Product scrutiny.</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Defense & Rebuttal Console -->
-        <div class="executive-card defense-card">
-          <div class="card-header">
-            <h2>4. Mount Strategic Defense</h2>
-            <span class="step-badge">Interactive</span>
-          </div>
-          <form id="defenseForm" onsubmit="event.preventDefault(); submitDefense();">
-            <div class="defense-row">
-              <div class="form-group flex-1">
-                <label for="targetPersonaSelect">Challenge Board Member</label>
-                <select id="targetPersonaSelect" class="form-select">
-                  <option value="">Most Skeptical Member (Auto-Detect)</option>
-                </select>
-              </div>
-            </div>
-            <div class="form-group">
-              <label for="defenseArgument">Evidence-Backed Counter-Argument</label>
-              <textarea id="defenseArgument" class="form-textarea" rows="2" placeholder="Cite specific benchmarks, fallback circuits, unit margins, SOC 2 controls, or customer retention data..." required></textarea>
-            </div>
-            <div class="defense-actions">
-              <button type="submit" id="defendBtn" class="btn-primary" disabled>
-                <span class="btn-icon">🛡️</span> Present Concrete Defense
-              </button>
-              <button type="button" id="preMortemBtn" class="btn-accent" disabled onclick="generatePreMortemReport()">
-                <span class="btn-icon">📋</span> Generate Executive Pre-Mortem
-              </button>
-            </div>
-          </form>
-        </div>
-      </section>
-    </main>
-
-    <!-- Executive Pre-Mortem Report Modal -->
-    <div id="preMortemModal" class="modal-overlay hidden">
-      <div class="modal-content executive-dossier">
-        <div class="modal-header">
-          <div class="dossier-tag">CONFIDENTIAL BOARD DOSSIER</div>
-          <h2 id="modalTitle">EXECUTIVE PRE-MORTEM REPORT</h2>
-          <button type="button" class="btn-close" onclick="closePreMortemModal()">✕</button>
-        </div>
-        <div class="modal-body" id="modalBody">
-          <!-- Populated dynamically -->
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn-secondary" onclick="window.print()">🖨️ Print Dossier</button>
-          <button type="button" class="btn-primary" onclick="closePreMortemModal()">Close Report</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <script src="app.js"></script>
-</body>
+<!doctype html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ef4444' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polygon points='12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2'/></svg>" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ContraBoard | Adversarial AI Boardroom & Pre-Mortem Studio</title>
+    <meta name="description" content="Stress-test your architectural proposals, startup pitches, and product strategies against a gauntlet of ruthless specialized AI critics." />
+    <script type="module" crossorigin src="/assets/index-_ERnuEb-.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-BDjRlLLu.css">
+  </head>
+  <body class="bg-[#090a0f] text-slate-100 min-h-screen antialiased selection:bg-rose-500/20 selection:text-rose-200">
+    <noscript>
+      <h1>CONTRABOARD - Devil's Advocate Boardroom</h1>
+      <p>Convene Devil's Advocate Board to stress-test your strategy.</p>
+    </noscript>
+    <div id="root"></div>
+  </body>
 </html>

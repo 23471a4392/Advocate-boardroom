@@ -1,11 +1,14 @@
-import Database from 'better-sqlite3';
 import fs from 'fs';
 import path from 'path';
+import { createRequire } from 'node:module';
 import { env } from '../config/env';
 import { BoardSession, BoardMessage, PreMortemReport } from '../models/board.types';
 
+const nodeRequire = createRequire(__filename);
+const { DatabaseSync } = nodeRequire('node:sqlite');
+
 class DatabaseService {
-  private db: Database.Database;
+  private db: any;
 
   constructor() {
     const isTest = env.NODE_ENV === 'test';
@@ -18,8 +21,8 @@ class DatabaseService {
       }
     }
 
-    this.db = new Database(dbPath);
-    this.db.pragma('journal_mode = WAL');
+    this.db = new DatabaseSync(dbPath);
+    this.db.exec('PRAGMA journal_mode = WAL');
     this.initTables();
   }
 

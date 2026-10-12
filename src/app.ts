@@ -4,14 +4,22 @@ import path from 'path';
 import { env } from './config/env';
 import { rateLimiter } from './middleware/rateLimiter';
 import { errorHandler } from './middleware/errorHandler';
+import { requestIdMiddleware } from './middleware/requestId';
+import { securityHeaders } from './middleware/securityHeaders';
+import { compressionHeaderHint } from './middleware/compressionHelper';
+import { payloadSanitizer } from './middleware/sanitizer';
 import { boardRouter } from './routes/boardRoutes';
 
 const app: Application = express();
 
-// Security and standard middlewares
+// Security, tracing and standard middlewares
+app.use(requestIdMiddleware);
+app.use(securityHeaders);
+app.use(compressionHeaderHint);
 app.use(cors({ origin: env.CORS_ORIGIN, credentials: true }));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(payloadSanitizer);
 app.use(rateLimiter);
 
 // Serve static frontend assets if public folder exists
@@ -36,6 +44,14 @@ app.get('/api/docs', (req: Request, res: Response) => {
 
 // Boardroom API routes
 app.use('/api/board', boardRouter);
+
+// SPA fallback for browser client-side routing
+app.get('*', (req: Request, res: Response, next) => {
+  if (req.path.startsWith('/api') || req.path === '/health') {
+    return next();
+  }
+  res.sendFile(path.join(publicDir, 'index.html'));
+});
 
 // Global Error Handler
 app.use(errorHandler);
